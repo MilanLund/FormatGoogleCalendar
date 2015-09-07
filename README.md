@@ -1,5 +1,6 @@
 # FormatGoogleCalendar
-Script gets public Google calendar and displays list of events. 
+Script gets public Google calendar and displays list of events.<br>
+Example: <a target="_blank" href="http://www.kacurak.com/formatgooglecalendar/example.html">http://www.kacurak.com/formatgooglecalendar/example.html</a>
 ## How to install
 ###Step 1: Link required files
 <pre><code>
