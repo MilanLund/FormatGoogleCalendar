@@ -1,0 +1,227 @@
+/**
+ * Format Google Calendar JSON output into human readable list
+ *
+ * Copyright 2015, Aruba (Milan Kacurak)
+ * 
+ */
+var formatGoogleCalendar = (function() {
+
+	//Gets JSON from Google Calendar and transfroms it into html list items and appends it to past or upcoming events list
+    var init = function(settings) {
+        var result;
+
+        //Get JSON, parse it, transform into list items and append it to past or upcoming events list
+        jQuery.getJSON(settings.calendarUrl, function(data) {
+            result = data.items;
+            result.sort(comp).reverse();
+
+            var pastCounter = 0,
+                upcomingCounter = 0,
+                pastResult = [],
+                upcomingResult = [],
+                $upcomingElem = jQuery(settings.upcomingSelector),
+                $pastElem = jQuery(settings.pastSelector);
+
+            if (settings.pastTopN === -1) {
+                settings.pastTopN = result.length;
+            }
+
+            if (settings.upcomingTopN === -1) {
+                settings.upcomingTopN = result.length;
+            }
+
+            if (settings.past === false) {
+                settings.pastTopN = 0;
+            }
+
+            if (settings.upcoming === false) {
+                settings.upcomingTopN = 0;
+            }
+
+            for (i in result) {
+                item = result[i];
+
+                if (isPast(result[i].end.dateTime || result[i].end.date)) {
+                    if (pastCounter < settings.pastTopN) {
+                       pastResult.push(result[i]);
+                       pastCounter++;
+                    }
+                } else {
+                    if (upcomingCounter < settings.upcomingTopN) {
+                        upcomingResult.push(result[i]);
+                        upcomingCounter++;   
+                    }
+                }
+            }
+
+            upcomingResult.reverse();
+
+            for (i in pastResult) {
+                $pastElem.append(transformationList(pastResult[i], settings.itemsTagName));
+            }
+
+            for (i in upcomingResult) {
+                $upcomingElem.append(transformationList(upcomingResult[i], settings.itemsTagName));
+            }
+
+            if ($upcomingElem.children().length !== 0) {
+                jQuery(settings.upcomingHeading).insertBefore($upcomingElem);
+            }
+
+            if ($pastElem.children().length !== 0) {
+                jQuery(settings.pastHeading).insertBefore($pastElem);
+            }
+
+        });
+    }
+
+    //Compare dates 
+    var comp = function(a, b) {
+        return new Date(a.start.dateTime || a.start.date).getTime() - new Date(b.start.dateTime || b.start.date).getTime();
+    }
+
+    //Overwrites defaultSettings values with overrideSettings and adds overrideSettings if non existent in defaultSettings
+    var mergeOptions = function(defaultSettings, overrideSettings){
+        var newObject = {};
+        for (var property in defaultSettings) {
+            newObject[property] = defaultSettings[property]; 
+        }
+        for (var property in overrideSettings) { 
+            newObject[property] = overrideSettings[property]; 
+        }
+        return newObject;
+    }
+
+    //Get all necessary data (dates, location, summary) and format and list item
+    var transformationList = function(result, tagName) {
+        var dateStart = getDateInfo(result.start.dateTime || result.start.date),
+        	dateEnd = getDateInfo(result.end.dateTime || result.end.date),
+        	dateFormatted = getFormattedDate(dateStart, dateEnd),
+        	location = '',
+            description = '';
+
+        if (typeof result.location !== 'undefined') {
+            location = ' in ' + result.location;
+        }
+
+        if (typeof result.description !== 'undefined') {
+            description = ' &mdash; ' + result.description;
+        }
+
+        return '<' + tagName + '><span class="date">' + dateFormatted + '</span>: <span class="summary">' + result.summary + '</span><span class="description">' + description + '</span><span class="location">' + location + '</span></' + tagName + '>';
+    }
+
+    //Check if date is later then now
+    var isPast = function(date) {
+        var compareDate = new Date(date),
+        	now = new Date();
+
+        if (now.getTime() > compareDate.getTime()) {
+            return true;
+        }
+       	
+       	return false;
+    }
+
+    //Get temp array with information abou day in followin format: [day number, month number, year]
+    var getDateInfo = function(date) {
+        date = new Date(date);
+        return [date.getDate(), date.getMonth(), date.getFullYear()];
+    }
+
+    //Get month name according to index
+    var getMonthName = function(month) {
+        var monthNames = [
+            'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'
+        ];
+
+        return monthNames[month];
+    }
+
+    //Transformations for formatting date into human readable format
+    var formatDateSameDay = function(date) {
+    	//month day, year
+        return getMonthName(date[1]) + ' ' + date[0] + ', ' + date[2];
+    }
+
+    var formatDateDifferentDay = function(dateStart, dateEnd) {
+    	//month day-day, year
+        return getMonthName(dateStart[1]) + ' ' + dateStart[0] + '-' + dateEnd[0] + ', ' + dateStart[2];
+    }
+
+    var formatDateDifferentMonth = function(dateStart, dateEnd) {
+    	//month day - month day, year
+        return getMonthName(dateStart[1]) + ' ' + dateStart[0] + '-' + getMonthName(dateEnd[1]) + ' ' + dateEnd[0] + ', ' + dateStart[2];
+    }
+
+    var formatDateDifferentYear = function(dateStart, dateEnd) {
+    	//month day, year - month day, year
+        return getMonthName(dateStart[1]) + ' ' + dateStart[0] + ', ' + dateStart[2] + '-' + getMonthName(dateEnd[1]) + ' ' + dateEnd[0] + ', ' + dateEnd[2];
+    }
+
+    //Check differences between dates and format them
+    var getFormattedDate = function(dateStart, dateEnd) {
+        var formattedDate = '';
+
+        if (dateStart[0] === dateEnd[0]) {
+            if (dateStart[1] === dateEnd[1]) {
+                if (dateStart[2] === dateEnd[2]) {
+                    //month day, year
+                    formattedDate = formatDateSameDay(dateStart);
+                } else {
+                    //month day, year - month day, year
+                    formattedDate = formatDateDifferentYear(dateStart, dateEnd);
+                }
+            } else {
+                if (dateStart[2] === dateEnd[2]) {
+                    //month day - month day, year
+                    formattedDate = formatDateDifferentMonth(dateStart, dateEnd);
+                } else {
+                    //month day, year - month day, year
+                    formattedDate = formatDateDifferentYear(dateStart, dateEnd);
+                }
+            }
+        } else {
+            if (dateStart[1] === dateEnd[1]) {
+                if (dateStart[2] === dateEnd[2]) {
+                    //month day-day, year
+                    formattedDate = formatDateDifferentDay(dateStart, dateEnd);
+                } else {
+                    //month day, year - month day, year
+                    formattedDate = formatDateDifferentYear(dateStart, dateEnd);
+                }
+            } else {
+                if (dateStart[2] === dateEnd[2]) {
+                    //month day - month day, year
+                    formattedDate = formatDateDifferentMonth(dateStart, dateEnd);
+                } else {
+                    //month day, year - month day, year
+                    formattedDate = formatDateDifferentYear(dateStart, dateEnd);
+                }
+            }
+        }
+
+        return formattedDate;
+    }
+
+    return {
+        init: function (settingsOverride) {
+            var settings = {
+                calendarUrl: 'https://www.googleapis.com/calendar/v3/calendars/b6f9anqojnd7gs1qgbbl5uqqgo@group.calendar.google.com/events?key=AIzaSyCR3-ptjHE-_douJsn8o20oRwkxt-zHStY',
+                past: true,
+                upcoming: true,
+                pastTopN: -1,
+                upcomingTopN: -1,
+                itemsTagName: 'li',
+                upcomingSelector: '#events-upcoming',
+                pastSelector: '#events-past',
+                upcomingHeading: '<h2>Upcoming</h2>',
+                pastHeading: '<h2>Past</h2>'
+            }
+
+            settings = mergeOptions(settings, settingsOverride);
+
+            init(settings);
+        }
+    }
+})();
