@@ -31,7 +31,7 @@ formatGoogleCalendar.init({});
 * pastSelector (string, selector name of a parent element of past events)<br>
 * upcomingHeading (string, heading of upcoming events)<br>
 * pastHeading (string, heading of past events)<br>
-* format (array, describes format in which should be data displayed, it is a list of strings where wildcards are <b>*date*</b>, <b>*summary*</b>, <b>*description*</b>, <b>*location*</b>, if a string is a different value than a wildcard the string will be appended to the final output)<br>
+* format (array, describes format in which should be data displayed, it is a list of strings where wildcards are <code><b>*date*</b>, <b>*summary*</b>, <b>*description*</b>, <b>*location*</b></code>, if a string is a different value than a wildcard the string will be appended to the final output)<br>
 
 ## Example of initialization
 <pre><code>
