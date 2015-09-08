@@ -1,7 +1,7 @@
 /**
  * Format Google Calendar JSON output into human readable list
  *
- * Copyright 2015, Aruba (Milan Kacurak)
+ * Copyright 2015, Milan Kacurak
  * 
  */
 var formatGoogleCalendar = (function() {
@@ -42,7 +42,6 @@ var formatGoogleCalendar = (function() {
             }
 
             for (i in result) {
-                item = result[i];
 
                 if (isPast(result[i].end.dateTime || result[i].end.date)) {
                     if (pastCounter < settings.pastTopN) {
@@ -60,11 +59,11 @@ var formatGoogleCalendar = (function() {
             upcomingResult.reverse();
 
             for (i in pastResult) {
-                $pastElem.append(transformationList(pastResult[i], settings.itemsTagName));
+                $pastElem.append(transformationList(pastResult[i], settings.itemsTagName, settings.format));
             }
 
             for (i in upcomingResult) {
-                $upcomingElem.append(transformationList(upcomingResult[i], settings.itemsTagName));
+                $upcomingElem.append(transformationList(upcomingResult[i], settings.itemsTagName, settings.format));
             }
 
             if ($upcomingElem.children().length !== 0) {
@@ -88,31 +87,49 @@ var formatGoogleCalendar = (function() {
         var newObject = {},
             i;
         for (i in defaultSettings) {
-            newObject[property] = defaultSettings[property]; 
+            newObject[i] = defaultSettings[i]; 
         }
         for (i in overrideSettings) { 
-            newObject[property] = overrideSettings[property]; 
+            newObject[i] = overrideSettings[i]; 
         }
         return newObject;
     };
 
-    //Get all necessary data (dates, location, summary) and format and list item
-    var transformationList = function(result, tagName) {
+    //Get all necessary data (dates, location, summary, description) and creates a list item
+    var transformationList = function(result, tagName, format) {
         var dateStart = getDateInfo(result.start.dateTime || result.start.date),
         	dateEnd = getDateInfo(result.end.dateTime || result.end.date),
         	dateFormatted = getFormattedDate(dateStart, dateEnd),
-        	location = '',
-            description = '';
+            output = '<' + tagName + '>',
+            summary = result.summary || '',
+            description = result.description || '',
+            location = result.location || '',
+            i;
 
-        if (typeof result.location !== 'undefined') {
-            location = ' in ' + result.location;
+        for (i = 0; i < format.length; i++) {
+
+            format[i] = format[i].toString();
+
+            if (format[i] === '*summary*') {
+                output = output.concat('<span class="summary">' + summary + '</span>');
+            } else if (format[i] === '*date*') {
+                output = output.concat('<span class="date">' + dateFormatted + '</span>');
+            } else if (format[i] === '*description*') {
+                output = output.concat('<span class="description">' + description + '</span>');
+            } else if (format[i] === '*location*') {
+                output = output.concat('<span class="location">' + location + '</span>');
+            } else {
+                if ((format[i + 1] === '*location*' && location !== '') ||
+                    (format[i + 1] === '*summary*' && summary !== '') ||
+                    (format[i + 1] === '*date*' && dateFormatted !== '') ||
+                    (format[i + 1] === '*description*' && description !== '')) {
+
+                    output = output.concat(format[i]);
+                }
+            }
         }
 
-        if (typeof result.description !== 'undefined') {
-            description = ' &mdash; ' + result.description;
-        }
-
-        return '<' + tagName + '><span class="summary">' + result.summary + '</span> on <span class="date">' + dateFormatted + '</span><span class="description">' + description + '</span><span class="location">' + location + '</span></' + tagName + '>';
+        return output + '</' + tagName + '>';
     };
 
     //Check if date is later then now
@@ -211,7 +228,7 @@ var formatGoogleCalendar = (function() {
     return {
         init: function (settingsOverride) {
             var settings = {
-                calendarUrl: 'https://www.googleapis.com/calendar/v3/calendars/b6f9anqojnd7gs1qgbbl5uqqgo@group.calendar.google.com/events?key=AIzaSyCR3-ptjHE-_douJsn8o20oRwkxt-zHStY',
+                calendarUrl: 'https://www.googleapis.com/calendar/v3/calendars/milan.kacurak@gmail.com/events?key=AIzaSyCR3-ptjHE-_douJsn8o20oRwkxt-zHStY',
                 past: true,
                 upcoming: true,
                 pastTopN: -1,
@@ -219,8 +236,9 @@ var formatGoogleCalendar = (function() {
                 itemsTagName: 'li',
                 upcomingSelector: '#events-upcoming',
                 pastSelector: '#events-past',
-                upcomingHeading: '<h2>Upcoming</h2>',
-                pastHeading: '<h2>Past</h2>'
+                upcomingHeading: '<h2>Upcoming events</h2>',
+                pastHeading: '<h2>Past events</h2>',
+                format: ['*date*', ': ', '*summary*', ' &mdash; ', '*description*', ' in ', '*location*']
             };
 
             settings = mergeOptions(settings, settingsOverride);

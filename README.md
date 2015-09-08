@@ -31,12 +31,13 @@ formatGoogleCalendar.init({});
 * pastSelector (string, selector name of a parent element of past events)<br>
 * upcomingHeading (string, heading of upcoming events)<br>
 * pastHeading (string, heading of past events)<br>
+* format (array, describes format in which should be data displayed, it is a list of strings where wildcards are <b>*date*</b>, <b>*summary*</b>, <b>*description*</b>, <b>*location*</b>, if a string is a different value than a wildcard the string will be appended to the final output)<br>
 
 ## Example of initialization
 <pre><code>
 formatGoogleCalendar.init({<br>
-		calendarUrl: 'https://www.googleapis.com/calendar/v3/calendars/milan.kacurak@gmail.com/events?key=AIzaSyCR3-ptjHE-_douJsn8o20oRwkxt-zHStY',<br>
-		past: false,<br>
+        calendarUrl: 'https://www.googleapis.com/calendar/v3/calendars/milan.kacurak@gmail.com/events?key=AIzaSyCR3-ptjHE-_douJsn8o20oRwkxt-zHStY',<br>
+        past: false,<br>
         upcoming: true,<br>
         pastTopN: -1,<br>
         upcomingTopN: 3,<br>
@@ -45,5 +46,6 @@ formatGoogleCalendar.init({<br>
         pastSelector: '#events-past',<br>
         upcomingHeading: '&lt;h2&gt;Upcoming events&lt;/h2&gt;',<br>
         pastHeading: '&lt;h2&gt;Past events&lt;/h2&gt;'<br>
-	});
-	</code></pre>
+        format: ['*date*', ': ', '*summary*', ' &mdash; ', '*description*', ' in ', '*location*']<br>
+});
+</code></pre>

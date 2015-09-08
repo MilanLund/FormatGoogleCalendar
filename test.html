@@ -1,40 +1,32 @@
 <!doctype html>
-
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-
-  <title>The HTML5 Herald</title>
-  <meta name="description" content="The HTML5 Herald">
-  <meta name="author" content="SitePoint">
-
-</head>
-
-<body>
-
-	<ul id="events-upcoming">
-
-	</ul>
-
-	<ul id="events-past">
-
-	</ul>
-
-  <script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
-   <script src="google-calendar.js"></script>
-   <script>
-	formatGoogleCalendar.init({
-		calendarUrl: 'https://www.googleapis.com/calendar/v3/calendars/milan.kacurak@gmail.com/events?key=AIzaSyCR3-ptjHE-_douJsn8o20oRwkxt-zHStY',
-		past: false,
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+    <meta name="description" content="">
+    <meta name="author" content="">
+  </head>
+  <body>
+    <ul id="events-upcoming">
+    </ul>
+    <ul id="events-past">
+    </ul>
+    <script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+    <script src="format-google-calendar.js"></script>
+    <script>
+      formatGoogleCalendar.init({
+        calendarUrl: 'https://www.googleapis.com/calendar/v3/calendars/milan.kacurak@gmail.com/events?key=AIzaSyCR3-ptjHE-_douJsn8o20oRwkxt-zHStY',
+        past: true,
         upcoming: true,
-        pastTopN: 0,
+        pastTopN: 20,
         upcomingTopN: 3,
         itemsTagName: 'li',
         upcomingSelector: '#events-upcoming',
         pastSelector: '#events-past',
         upcomingHeading: '<h2>Upcoming events</h2>',
-        pastHeading: '<h2>Past events</h2>'
-	});
-   </script>
-</body>
+        pastHeading: '<h2>Past events</h2>',
+        format: ['*date*', ': ', '*summary*', ' &mdash; ', '*description*', ' in ', '*location*']
+      }); 
+    </script>
+  </body>
 </html>
