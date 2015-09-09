@@ -21,6 +21,7 @@ var formatGoogleCalendar = (function() {
                 upcomingCounter = 0,
                 pastResult = [],
                 upcomingResult = [],
+                upcomingResultTemp = [],
                 $upcomingElem = jQuery(settings.upcomingSelector),
                 $pastElem = jQuery(settings.pastSelector),
                 i;
@@ -49,14 +50,18 @@ var formatGoogleCalendar = (function() {
                        pastCounter++;
                     }
                 } else {
-                    if (upcomingCounter < settings.upcomingTopN) {
-                        upcomingResult.push(result[i]);
-                        upcomingCounter++;   
-                    }
+                    upcomingResultTemp.push(result[i]); 
                 }
             }
 
-            upcomingResult.reverse();
+            upcomingResultTemp.reverse();
+
+            for (i in upcomingResultTemp) {
+                if (upcomingCounter < settings.upcomingTopN) {
+                    upcomingResult.push(upcomingResultTemp[i]);
+                    upcomingCounter++;   
+                }
+            }
 
             for (i in pastResult) {
                 $pastElem.append(transformationList(pastResult[i], settings.itemsTagName, settings.format));
