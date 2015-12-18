@@ -2,7 +2,7 @@
  * Format Google Calendar JSON output into human readable list
  *
  * Copyright 2015, Milan Kacurak
- * 
+ *
  */
 var formatGoogleCalendar = (function() {
 
@@ -14,7 +14,13 @@ var formatGoogleCalendar = (function() {
 
         //Get JSON, parse it, transform into list items and append it to past or upcoming events list
         jQuery.getJSON(settings.calendarUrl, function(data) {
-            result = data.items;
+            // Remove any cancelled events
+            data.items.forEach(function removeCancelledEvents(item) {
+                if (item && item.hasOwnProperty('status') && item.status !== 'cancelled') {
+                    result.push(item);
+                }
+            });
+
             result.sort(comp).reverse();
 
             var pastCounter = 0,
@@ -50,7 +56,7 @@ var formatGoogleCalendar = (function() {
                        pastCounter++;
                     }
                 } else {
-                    upcomingResultTemp.push(result[i]); 
+                    upcomingResultTemp.push(result[i]);
                 }
             }
 
@@ -59,7 +65,7 @@ var formatGoogleCalendar = (function() {
             for (i in upcomingResultTemp) {
                 if (upcomingCounter < settings.upcomingTopN) {
                     upcomingResult.push(upcomingResultTemp[i]);
-                    upcomingCounter++;   
+                    upcomingCounter++;
                 }
             }
 
@@ -82,7 +88,7 @@ var formatGoogleCalendar = (function() {
         });
     };
 
-    //Compare dates 
+    //Compare dates
     var comp = function(a, b) {
         return new Date(a.start.dateTime || a.start.date).getTime() - new Date(b.start.dateTime || b.start.date).getTime();
     };
@@ -92,10 +98,10 @@ var formatGoogleCalendar = (function() {
         var newObject = {},
             i;
         for (i in defaultSettings) {
-            newObject[i] = defaultSettings[i]; 
+            newObject[i] = defaultSettings[i];
         }
-        for (i in overrideSettings) { 
-            newObject[i] = overrideSettings[i]; 
+        for (i in overrideSettings) {
+            newObject[i] = overrideSettings[i];
         }
         return newObject;
     };
@@ -145,7 +151,7 @@ var formatGoogleCalendar = (function() {
         if (now.getTime() > compareDate.getTime()) {
             return true;
         }
-       	
+
        	return false;
     };
 
