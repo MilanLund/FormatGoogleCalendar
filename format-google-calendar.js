@@ -8,9 +8,13 @@ var formatGoogleCalendar = (function() {
 
     'use strict';
 
-	//Gets JSON from Google Calendar and transfroms it into html list items and appends it to past or upcoming events list
+    var config;
+
+    //Gets JSON from Google Calendar and transfroms it into html list items and appends it to past or upcoming events list
     var init = function(settings) {
         var result;
+
+        config = settings;
 
         //Get JSON, parse it, transform into list items and append it to past or upcoming events list
         jQuery.getJSON(settings.calendarUrl, function(data) {
@@ -103,8 +107,8 @@ var formatGoogleCalendar = (function() {
     //Get all necessary data (dates, location, summary, description) and creates a list item
     var transformationList = function(result, tagName, format) {
         var dateStart = getDateInfo(result.start.dateTime || result.start.date),
-        	dateEnd = getDateInfo(result.end.dateTime || result.end.date),
-        	dateFormatted = getFormattedDate(dateStart, dateEnd),
+            dateEnd = getDateInfo(result.end.dateTime || result.end.date),
+            dateFormatted = getFormattedDate(dateStart, dateEnd),
             output = '<' + tagName + '>',
             summary = result.summary || '',
             description = result.description || '',
@@ -140,19 +144,19 @@ var formatGoogleCalendar = (function() {
     //Check if date is later then now
     var isPast = function(date) {
         var compareDate = new Date(date),
-        	now = new Date();
+            now = new Date();
 
         if (now.getTime() > compareDate.getTime()) {
             return true;
         }
-       	
-       	return false;
+           
+           return false;
     };
 
     //Get temp array with information abou day in followin format: [day number, month number, year]
     var getDateInfo = function(date) {
         date = new Date(date);
-        return [date.getDate(), date.getMonth(), date.getFullYear()];
+        return [date.getDate(), date.getMonth(), date.getFullYear(), date.getHours(), date.getMinutes()];
     };
 
     //Get month name according to index
@@ -165,23 +169,29 @@ var formatGoogleCalendar = (function() {
     };
 
     //Transformations for formatting date into human readable format
-    var formatDateSameDay = function(date) {
-    	//month day, year
-        return getMonthName(date[1]) + ' ' + date[0] + ', ' + date[2];
+    var formatDateSameDay = function(dateStart, dateEnd) {
+        var formattedTime = '';
+
+        if (config.sameDayTimes) {
+            formattedTime = ' from ' + getFormattedTime(dateStart) + ' - ' + getFormattedTime(dateEnd);
+        }
+
+        //month day, year time-time
+        return getMonthName(dateStart[1]) + ' ' + dateStart[0] + ', ' + dateStart[2] + formattedTime;
     };
 
     var formatDateDifferentDay = function(dateStart, dateEnd) {
-    	//month day-day, year
+        //month day-day, year
         return getMonthName(dateStart[1]) + ' ' + dateStart[0] + '-' + dateEnd[0] + ', ' + dateStart[2];
     };
 
     var formatDateDifferentMonth = function(dateStart, dateEnd) {
-    	//month day - month day, year
+        //month day - month day, year
         return getMonthName(dateStart[1]) + ' ' + dateStart[0] + '-' + getMonthName(dateEnd[1]) + ' ' + dateEnd[0] + ', ' + dateStart[2];
     };
 
     var formatDateDifferentYear = function(dateStart, dateEnd) {
-    	//month day, year - month day, year
+        //month day, year - month day, year
         return getMonthName(dateStart[1]) + ' ' + dateStart[0] + ', ' + dateStart[2] + '-' + getMonthName(dateEnd[1]) + ' ' + dateEnd[0] + ', ' + dateEnd[2];
     };
 
@@ -193,7 +203,7 @@ var formatGoogleCalendar = (function() {
             if (dateStart[1] === dateEnd[1]) {
                 if (dateStart[2] === dateEnd[2]) {
                     //month day, year
-                    formattedDate = formatDateSameDay(dateStart);
+                    formattedDate = formatDateSameDay(dateStart, dateEnd);
                 } else {
                     //month day, year - month day, year
                     formattedDate = formatDateDifferentYear(dateStart, dateEnd);
@@ -230,12 +240,41 @@ var formatGoogleCalendar = (function() {
         return formattedDate;
     };
 
+    var getFormattedTime = function (date) {
+        var formattedTime = '',
+            period = 'AM',
+            hour = date[3],
+            minute = date[4];
+
+        // Handle afternoon.
+        if (hour >= 12) {
+            period = 'PM';
+
+            if (hour >= 13) {
+                hour -= 12;
+            }
+        }
+
+        // Handle midnight.
+        if (hour === 0) {
+            hour = 12;
+        }
+
+        // Ensure 2-digit minute value.
+        minute = (minute < 10 ? '0' : '') + minute;
+
+        // Format time.
+        formattedTime = hour + ':' + minute + period;
+        return formattedTime;
+    };
+
     return {
         init: function (settingsOverride) {
             var settings = {
                 calendarUrl: 'https://www.googleapis.com/calendar/v3/calendars/milan.kacurak@gmail.com/events?key=AIzaSyCR3-ptjHE-_douJsn8o20oRwkxt-zHStY',
                 past: true,
                 upcoming: true,
+                sameDayTimes: true,
                 pastTopN: -1,
                 upcomingTopN: -1,
                 itemsTagName: 'li',
