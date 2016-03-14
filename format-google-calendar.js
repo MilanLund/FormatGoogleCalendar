@@ -10,7 +10,7 @@ var formatGoogleCalendar = (function() {
 
 	//Gets JSON from Google Calendar and transfroms it into html list items and appends it to past or upcoming events list
     var init = function(settings) {
-        var result;
+        var result = [];
 
         //Get JSON, parse it, transform into list items and append it to past or upcoming events list
         jQuery.getJSON(settings.calendarUrl, function(data) {
