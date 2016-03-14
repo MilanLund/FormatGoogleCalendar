@@ -155,13 +155,8 @@ var formatGoogleCalendar = (function() {
         if (now.getTime() > compareDate.getTime()) {
             return true;
         }
-<<<<<<< HEAD
-           
-           return false;
-=======
 
-       	return false;
->>>>>>> refs/remotes/origin/master
+        return false;
     };
 
     //Get temp array with information abou day in followin format: [day number, month number, year]
