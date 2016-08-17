@@ -114,7 +114,8 @@ var formatGoogleCalendar = (function() {
     var transformationList = function(result, tagName, format) {
         var dateStart = getDateInfo(result.start.dateTime || result.start.date),
             dateEnd = getDateInfo(result.end.dateTime || result.end.date),
-            dateFormatted = getFormattedDate(dateStart, dateEnd),
+            isAllDayEvent = (typeof result.end.date !== 'undefined'),
+            dateFormatted = getFormattedDate(dateStart, dateEnd, isAllDayEvent),
             output = '<' + tagName + '>',
             summary = result.summary || '',
             description = result.description || '',
@@ -186,6 +187,11 @@ var formatGoogleCalendar = (function() {
         return getMonthName(dateStart[1]) + ' ' + dateStart[0] + ', ' + dateStart[2] + formattedTime;
     };
 
+    var formatDateOneDay = function(dateStart) {
+      //month day, year
+      return getMonthName(dateStart[1]) + ' ' + dateStart[0] + ', ' + dateStart[2];
+    };
+
     var formatDateDifferentDay = function(dateStart, dateEnd) {
         //month day-day, year
         return getMonthName(dateStart[1]) + ' ' + dateStart[0] + '-' + dateEnd[0] + ', ' + dateStart[2];
@@ -202,7 +208,7 @@ var formatGoogleCalendar = (function() {
     };
 
     //Check differences between dates and format them
-    var getFormattedDate = function(dateStart, dateEnd) {
+    var getFormattedDate = function(dateStart, dateEnd, isAllDayEvent) {
         var formattedDate = '';
 
         if (dateStart[0] === dateEnd[0]) {
@@ -226,8 +232,13 @@ var formatGoogleCalendar = (function() {
         } else {
             if (dateStart[1] === dateEnd[1]) {
                 if (dateStart[2] === dateEnd[2]) {
+                  if (isAllDayEvent) {
+                    //month day, year
+                    formattedDate = formatDateOneDay(dateStart);
+                  } else {
                     //month day-day, year
                     formattedDate = formatDateDifferentDay(dateStart, dateEnd);
+                  }
                 } else {
                     //month day, year - month day, year
                     formattedDate = formatDateDifferentYear(dateStart, dateEnd);
