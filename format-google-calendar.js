@@ -112,10 +112,14 @@ var formatGoogleCalendar = (function() {
 
     //Get all necessary data (dates, location, summary, description) and creates a list item
     var transformationList = function(result, tagName, format) {
-        var dateStart = getDateInfo(result.start.dateTime || result.start.date),
-            dateEnd = getDateInfo(result.end.dateTime || result.end.date),
-            isAllDayEvent = (typeof result.end.date !== 'undefined'),
-            dateFormatted = getFormattedDate(dateStart, dateEnd, isAllDayEvent),
+        var isAllDayEvent = (typeof result.end.date !== 'undefined'),
+            dateStart = getDateInfo(result.start.dateTime || result.start.date),
+            dateEnd = getDateInfo(result.end.dateTime || result.end.date);
+
+        if (isAllDayEvent) {
+          dateEnd = subtractOneDay(dateEnd);
+        }
+        var dateFormatted = getFormattedDate(dateStart, dateEnd),
             output = '<' + tagName + '>',
             summary = result.summary || '',
             description = result.description || '',
@@ -175,6 +179,13 @@ var formatGoogleCalendar = (function() {
         return monthNames[month];
     };
 
+    //Subtract one day
+    var subtractOneDay = function (dateInfo) {
+      var date = new Date(dateInfo[2] + '-' + parseInt(dateInfo[1] + 1) + '-' + dateInfo[0]);
+      date.setTime(date.getTime() - 86400000);
+      return getDateInfo(date);
+    };
+
     //Transformations for formatting date into human readable format
     var formatDateSameDay = function(dateStart, dateEnd) {
         var formattedTime = '';
@@ -208,7 +219,7 @@ var formatGoogleCalendar = (function() {
     };
 
     //Check differences between dates and format them
-    var getFormattedDate = function(dateStart, dateEnd, isAllDayEvent) {
+    var getFormattedDate = function(dateStart, dateEnd) {
         var formattedDate = '';
 
         if (dateStart[0] === dateEnd[0]) {
@@ -232,13 +243,8 @@ var formatGoogleCalendar = (function() {
         } else {
             if (dateStart[1] === dateEnd[1]) {
                 if (dateStart[2] === dateEnd[2]) {
-                  if (isAllDayEvent) {
-                    //month day, year
-                    formattedDate = formatDateOneDay(dateStart);
-                  } else {
                     //month day-day, year
                     formattedDate = formatDateDifferentDay(dateStart, dateEnd);
-                  }
                 } else {
                     //month day, year - month day, year
                     formattedDate = formatDateDifferentYear(dateStart, dateEnd);
