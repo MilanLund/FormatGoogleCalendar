@@ -129,6 +129,7 @@ var formatGoogleCalendar = (function() {
         var dateStart = getDateInfo(result.start.dateTime || result.start.date),
             dateEnd = getDateInfo(result.end.dateTime || result.end.date),
             moreDaysEvent = (typeof result.end.date !== 'undefined'),
+            dayNames = config.dayNames,
             isAllDayEvent = isAllDay(dateStart, dateEnd);
 
         if (moreDaysEvent) {
@@ -139,7 +140,7 @@ var formatGoogleCalendar = (function() {
           dateEnd = subtractOneMinute(dateEnd);
         }
 
-        var dateFormatted = getFormattedDate(dateStart, dateEnd, moreDaysEvent, isAllDayEvent),
+        var dateFormatted = getFormattedDate(dateStart, dateEnd, moreDaysEvent, isAllDayEvent, dayNames),
             output = '<' + tagName + '>',
             summary = result.summary || '',
             description = result.description || '',
@@ -191,12 +192,24 @@ var formatGoogleCalendar = (function() {
     };
 
     //Get month name according to index
-    var getMonthName = function(month) {
+    var getMonthName = function (month) {
         var monthNames = [
             'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'
         ];
 
         return monthNames[month];
+    };
+
+    var getDayName = function (day) {
+      var dayNames = [
+          'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'
+      ];
+
+      return dayNames[day];
+    };
+
+    var getDayNameFormatted = function (dateFormatted) {
+      return getDayName(getDateFormatted(dateFormatted).getDay()) + ' ';
     };
 
     var getDateFormatted = function (dateInfo) {
@@ -218,75 +231,106 @@ var formatGoogleCalendar = (function() {
     };
 
     //Transformations for formatting date into human readable format
-    var formatDateSameDay = function(dateStart, dateEnd, moreDaysEvent, isAllDayEvent) {
-        var formattedTime = '';
+    var formatDateSameDay = function(dateStart, dateEnd, moreDaysEvent, isAllDayEvent, dayNames) {
+        var formattedTime = '',
+            dayNameStart = '';
+
+        if (dayNames) {
+          dayNameStart = getDayNameFormatted(dateStart);
+        }
 
         if (config.sameDayTimes && !moreDaysEvent && !isAllDayEvent) {
             formattedTime = ' from ' + getFormattedTime(dateStart) + ' - ' + getFormattedTime(dateEnd);
         }
 
         //month day, year time-time
-        return getMonthName(dateStart[1]) + ' ' + dateStart[0] + ', ' + dateStart[2] + formattedTime;
+        return dayNameStart + getMonthName(dateStart[1]) + ' ' + dateStart[0] + ', ' + dateStart[2] + formattedTime;
     };
 
-    var formatDateOneDay = function(dateStart) {
+    var formatDateOneDay = function(dateStart, dayNames) {
+      var dayName = '';
+
+      if (dayNames) {
+        dayName = getDayNameFormatted(dateStart);
+      }
       //month day, year
-      return getMonthName(dateStart[1]) + ' ' + dateStart[0] + ', ' + dateStart[2];
+      return dayName + getMonthName(dateStart[1]) + ' ' + dateStart[0] + ', ' + dateStart[2];
     };
 
-    var formatDateDifferentDay = function(dateStart, dateEnd) {
+    var formatDateDifferentDay = function(dateStart, dateEnd, dayNames) {
+      var dayNameStart = '',
+          dayNameEnd = '';
+
+      if (dayNames) {
+        dayNameStart = getDayNameFormatted(dateStart);
+        dayNameEnd = getDayNameFormatted(dateEnd);
+      }
         //month day-day, year
-        return getMonthName(dateStart[1]) + ' ' + dateStart[0] + '-' + dateEnd[0] + ', ' + dateStart[2];
+        return dayNameStart + getMonthName(dateStart[1]) + ' ' + dateStart[0] + '-' + dayNameEnd + dateEnd[0] + ', ' + dateStart[2];
     };
 
-    var formatDateDifferentMonth = function(dateStart, dateEnd) {
+    var formatDateDifferentMonth = function(dateStart, dateEnd, dayNames) {
+      var dayNameStart = '',
+          dayNameEnd = '';
+
+      if (dayNames) {
+        dayNameStart = getDayNameFormatted(dateStart);
+        dayNameEnd = getDayNameFormatted(dateEnd);
+      }
         //month day - month day, year
-        return getMonthName(dateStart[1]) + ' ' + dateStart[0] + '-' + getMonthName(dateEnd[1]) + ' ' + dateEnd[0] + ', ' + dateStart[2];
+        return dayNameStart + getMonthName(dateStart[1]) + ' ' + dateStart[0] + '-' + dayNameEnd + getMonthName(dateEnd[1]) + ' ' + dateEnd[0] + ', ' + dateStart[2];
     };
 
-    var formatDateDifferentYear = function(dateStart, dateEnd) {
+    var formatDateDifferentYear = function(dateStart, dateEnd, dayNames) {
+      var dayNameStart = '',
+          dayNameEnd = '';
+
+      if (dayNames) {
+        dayNameStart = getDayNameFormatted(dateStart);
+        dayNameEnd = getDayNameFormatted(dateEnd);
+      }
         //month day, year - month day, year
-        return getMonthName(dateStart[1]) + ' ' + dateStart[0] + ', ' + dateStart[2] + '-' + getMonthName(dateEnd[1]) + ' ' + dateEnd[0] + ', ' + dateEnd[2];
+        return dayNameStart + getMonthName(dateStart[1]) + ' ' + dateStart[0] + ', ' + dateStart[2] + '-' + dayNameEnd + getMonthName(dateEnd[1]) + ' ' + dateEnd[0] + ', ' + dateEnd[2];
     };
 
     //Check differences between dates and format them
-    var getFormattedDate = function(dateStart, dateEnd, moreDaysEvent, isAllDayEvent) {
+    var getFormattedDate = function(dateStart, dateEnd, moreDaysEvent, isAllDayEvent, dayNames) {
         var formattedDate = '';
 
         if (dateStart[0] === dateEnd[0]) {
             if (dateStart[1] === dateEnd[1]) {
                 if (dateStart[2] === dateEnd[2]) {
                     //month day, year
-                    formattedDate = formatDateSameDay(dateStart, dateEnd, moreDaysEvent, isAllDayEvent);
+                    formattedDate = formatDateSameDay(dateStart, dateEnd, moreDaysEvent, isAllDayEvent, dayNames);
                 } else {
                     //month day, year - month day, year
-                    formattedDate = formatDateDifferentYear(dateStart, dateEnd);
+                    formattedDate = formatDateDifferentYear(dateStart, dateEnd, dayNames);
                 }
             } else {
                 if (dateStart[2] === dateEnd[2]) {
                     //month day - month day, year
-                    formattedDate = formatDateDifferentMonth(dateStart, dateEnd);
+                    formattedDate = formatDateDifferentMonth(dateStart, dateEnd, dayNames);
                 } else {
                     //month day, year - month day, year
-                    formattedDate = formatDateDifferentYear(dateStart, dateEnd);
+                    formattedDate = formatDateDifferentYear(dateStart, dateEnd, dayNames);
                 }
             }
         } else {
             if (dateStart[1] === dateEnd[1]) {
                 if (dateStart[2] === dateEnd[2]) {
                     //month day-day, year
-                    formattedDate = formatDateDifferentDay(dateStart, dateEnd);
+                    formattedDate = formatDateDifferentDay(dateStart, dateEnd, dayNames);
                 } else {
                     //month day, year - month day, year
-                    formattedDate = formatDateDifferentYear(dateStart, dateEnd);
+                    formattedDate = formatDateDifferentYear(dateStart, dateEnd, dayNames);
                 }
             } else {
                 if (dateStart[2] === dateEnd[2]) {
                     //month day - month day, year
-                    formattedDate = formatDateDifferentMonth(dateStart, dateEnd);
+                    formattedDate = formatDateDifferentMonth(dateStart, dateEnd, dayNames);
                 } else {
                     //month day, year - month day, year
-                    formattedDate = formatDateDifferentYear(dateStart, dateEnd);
+                    formattedDate = formatDateDifferentYear(dateStart, dateEnd, dayNames);
                 }
             }
         }
@@ -329,6 +373,7 @@ var formatGoogleCalendar = (function() {
                 past: true,
                 upcoming: true,
                 sameDayTimes: true,
+                dayNames: true,
                 pastTopN: -1,
                 upcomingTopN: -1,
                 itemsTagName: 'li',
