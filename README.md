@@ -25,6 +25,7 @@ formatGoogleCalendar.init({});
 * past (boolean, determines if past events should be displayed)<br>
 * upcoming (boolean, determines if upcoming events should be displayed)<br>
 * sameDayTimes (boolean, determines whether to show times for single-day events)<br>
+* dayNames (boolean, determines whether to show day names, beta feature)<br>
 * pastTopN (integer, number of latest past events, -1 means display all)<br>
 * upcomingTopN (integer, number of upcoming events, -1 means display all)<br>
 * itemsTagName (string, tagname of each event item)<br>
@@ -41,6 +42,7 @@ formatGoogleCalendar.init({<br>
         past: false,<br>
         upcoming: true,<br>
         sameDayTimes: true,<br>
+        dayNames: true,<br>
         pastTopN: -1,<br>
         upcomingTopN: 3,<br>
         itemsTagName: 'li',<br>
