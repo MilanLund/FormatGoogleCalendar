@@ -114,7 +114,7 @@ var formatGoogleCalendar = (function() {
       var dateStartFormatted = getDateFormatted(dateStart),
           dateEndFormatted = getDateFormatted(dateEnd);
 
-      //if start date is midnight and the end date a following day midnight as well 
+      //if start date is midnight and the end date a following day midnight as well
       if ((dateStartFormatted.getTime() === dateEndFormatted.getTime() - 86400000) &&
           dateStartFormatted.getMinutes() === 0 &&
           dateStartFormatted.getHours() === 0) {
@@ -201,7 +201,7 @@ var formatGoogleCalendar = (function() {
 
     var getDateFormatted = function (dateInfo) {
       return new Date(dateInfo[2], dateInfo[1], dateInfo[0], dateInfo[3], dateInfo[4] + 0, 0);
-    }
+    };
 
     //Subtract one day
     var subtractOneDay = function (dateInfo) {
