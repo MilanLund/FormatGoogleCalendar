@@ -110,16 +110,36 @@ var formatGoogleCalendar = (function() {
         return newObject;
     };
 
+    var isAllDay = function (dateStart, dateEnd) {
+      var dateStartFormatted = getDateFormatted(dateStart),
+          dateEndFormatted = getDateFormatted(dateEnd);
+
+      //if start date is midnight and the end date a following day midnight as well 
+      if ((dateStartFormatted.getTime() === dateEndFormatted.getTime() - 86400000) &&
+          dateStartFormatted.getMinutes() === 0 &&
+          dateStartFormatted.getHours() === 0) {
+        return true;
+      }
+
+      return false;
+    };
+
     //Get all necessary data (dates, location, summary, description) and creates a list item
     var transformationList = function(result, tagName, format) {
-        var isAllDayEvent = (typeof result.end.date !== 'undefined'),
-            dateStart = getDateInfo(result.start.dateTime || result.start.date),
-            dateEnd = getDateInfo(result.end.dateTime || result.end.date);
+        var dateStart = getDateInfo(result.start.dateTime || result.start.date),
+            dateEnd = getDateInfo(result.end.dateTime || result.end.date),
+            moreDaysEvent = (typeof result.end.date !== 'undefined'),
+            isAllDayEvent = isAllDay(dateStart, dateEnd);
 
-        if (isAllDayEvent) {
+        if (moreDaysEvent) {
           dateEnd = subtractOneDay(dateEnd);
         }
-        var dateFormatted = getFormattedDate(dateStart, dateEnd),
+
+        if (isAllDayEvent) {
+          dateEnd = subtractOneMinute(dateEnd);
+        }
+
+        var dateFormatted = getFormattedDate(dateStart, dateEnd, moreDaysEvent, isAllDayEvent),
             output = '<' + tagName + '>',
             summary = result.summary || '',
             description = result.description || '',
@@ -164,10 +184,10 @@ var formatGoogleCalendar = (function() {
         return false;
     };
 
-    //Get temp array with information abou day in followin format: [day number, month number, year]
+    //Get temp array with information abou day in followin format: [day number, month number, year, hours, minutes]
     var getDateInfo = function(date) {
         date = new Date(date);
-        return [date.getDate(), date.getMonth(), date.getFullYear(), date.getHours(), date.getMinutes()];
+        return [date.getDate(), date.getMonth(), date.getFullYear(), date.getHours(), date.getMinutes(), 0, 0];
     };
 
     //Get month name according to index
@@ -179,18 +199,29 @@ var formatGoogleCalendar = (function() {
         return monthNames[month];
     };
 
+    var getDateFormatted = function (dateInfo) {
+      return new Date(dateInfo[2], dateInfo[1], dateInfo[0], dateInfo[3], dateInfo[4] + 0, 0);
+    }
+
     //Subtract one day
     var subtractOneDay = function (dateInfo) {
-      var date = new Date(dateInfo[2] + '-' + parseInt(dateInfo[1] + 1) + '-' + dateInfo[0]);
+      var date = getDateFormatted(dateInfo);
       date.setTime(date.getTime() - 86400000);
       return getDateInfo(date);
     };
 
+    //Subtract one minute
+    var subtractOneMinute = function (dateInfo) {
+      var date = getDateFormatted(dateInfo);
+      date.setTime(date.getTime() - 60000);
+      return getDateInfo(date);
+    };
+
     //Transformations for formatting date into human readable format
-    var formatDateSameDay = function(dateStart, dateEnd) {
+    var formatDateSameDay = function(dateStart, dateEnd, moreDaysEvent, isAllDayEvent) {
         var formattedTime = '';
 
-        if (config.sameDayTimes) {
+        if (config.sameDayTimes && !moreDaysEvent && !isAllDayEvent) {
             formattedTime = ' from ' + getFormattedTime(dateStart) + ' - ' + getFormattedTime(dateEnd);
         }
 
@@ -219,14 +250,14 @@ var formatGoogleCalendar = (function() {
     };
 
     //Check differences between dates and format them
-    var getFormattedDate = function(dateStart, dateEnd) {
+    var getFormattedDate = function(dateStart, dateEnd, moreDaysEvent, isAllDayEvent) {
         var formattedDate = '';
 
         if (dateStart[0] === dateEnd[0]) {
             if (dateStart[1] === dateEnd[1]) {
                 if (dateStart[2] === dateEnd[2]) {
                     //month day, year
-                    formattedDate = formatDateSameDay(dateStart, dateEnd);
+                    formattedDate = formatDateSameDay(dateStart, dateEnd, moreDaysEvent, isAllDayEvent);
                 } else {
                     //month day, year - month day, year
                     formattedDate = formatDateDifferentYear(dateStart, dateEnd);
