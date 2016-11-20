@@ -15,9 +15,12 @@ var formatGoogleCalendar = (function() {
         var result = [];
 
         config = settings;
+        var finalURL = settings.calendarUrl;
+
+        if(settings.recurringEvents) finalURL = finalURL.concat("&singleEvents=true");
 
         //Get JSON, parse it, transform into list items and append it to past or upcoming events list
-        jQuery.getJSON(settings.calendarUrl, function(data) {
+        jQuery.getJSON(finalURL, function(data) {
             // Remove any cancelled events
             data.items.forEach(function removeCancelledEvents(item) {
                 if (item && item.hasOwnProperty('status') && item.status !== 'cancelled') {
@@ -376,6 +379,7 @@ var formatGoogleCalendar = (function() {
                 dayNames: true,
                 pastTopN: -1,
                 upcomingTopN: -1,
+                recurringEvents: true,
                 itemsTagName: 'li',
                 upcomingSelector: '#events-upcoming',
                 pastSelector: '#events-past',
