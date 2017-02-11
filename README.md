@@ -28,6 +28,7 @@ formatGoogleCalendar.init({});
 * dayNames (boolean, determines whether to show day names, beta feature)<br>
 * pastTopN (integer, number of latest past events, -1 means display all)<br>
 * upcomingTopN (integer, number of upcoming events, -1 means display all)<br>
+* recurringEvents (boolean, determines if recurring events should be shown as multiple events)<br>
 * itemsTagName (string, tagname of each event item)<br>
 * upcomingSelector (string, selector name of a parent element of upcoming events)<br>
 * pastSelector (string, selector name of a parent element of past events)<br>
@@ -45,6 +46,7 @@ formatGoogleCalendar.init({<br>
         dayNames: true,<br>
         pastTopN: -1,<br>
         upcomingTopN: 3,<br>
+        recurringEvents: true, <br>
         itemsTagName: 'li',<br>
         upcomingSelector: '#events-upcoming',<br>
         pastSelector: '#events-past',<br>
