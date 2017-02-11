@@ -136,7 +136,7 @@ var formatGoogleCalendar = (function() {
             isAllDayEvent = isAllDay(dateStart, dateEnd);
 
         if (moreDaysEvent) {
-          dateEnd = subtractOneDay(dateEnd);
+          dateStart = addOneDay(dateStart);
         }
 
         if (isAllDayEvent) {
@@ -219,6 +219,13 @@ var formatGoogleCalendar = (function() {
       return new Date(dateInfo[2], dateInfo[1], dateInfo[0], dateInfo[3], dateInfo[4] + 0, 0);
     };
 
+    //Add one day
+    var addOneDay = function (dateInfo) {
+     var date = getDateFormatted(dateInfo);
+     date.setTime(date.getTime() + 86400000);
+     return getDateInfo(date);
+     };
+    
     //Subtract one day
     var subtractOneDay = function (dateInfo) {
       var date = getDateFormatted(dateInfo);
