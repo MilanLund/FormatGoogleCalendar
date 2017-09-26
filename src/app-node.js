@@ -1,107 +1,115 @@
 /**
  * Format Google Calendar JSON output into human readable list
  *
- * Copyright 2015, Milan Kacurak
+ * Copyright 2017, Milan Lund
  *
  */
-var formatGoogleCalendar = (function() {
+
+window.formatGoogleCalendar = (() => {
 
     'use strict';
 
     var config;
 
-    //Gets JSON from Google Calendar and transfroms it into html list items and appends it to past or upcoming events list
-    var init = function(settings) {
-        var result = [];
-
-        config = settings;
-        var finalURL = settings.calendarUrl;
-
-        if(settings.recurringEvents) finalURL = finalURL.concat("&singleEvents=true");
-
-        //Get JSON, parse it, transform into list items and append it to past or upcoming events list
-        jQuery.getJSON(finalURL, function(data) {
-            // Remove any cancelled events
-            data.items.forEach(function removeCancelledEvents(item) {
-                if (item && item.hasOwnProperty('status') && item.status !== 'cancelled') {
-                    result.push(item);
-                }
-            });
-
-            result.sort(comp).reverse();
-
-            var pastCounter = 0,
-                upcomingCounter = 0,
-                pastResult = [],
-                upcomingResult = [],
-                upcomingResultTemp = [],
-                $upcomingElem = jQuery(settings.upcomingSelector),
-                $pastElem = jQuery(settings.pastSelector),
-                i;
-
-            if (settings.pastTopN === -1) {
-                settings.pastTopN = result.length;
-            }
-
-            if (settings.upcomingTopN === -1) {
-                settings.upcomingTopN = result.length;
-            }
-
-            if (settings.past === false) {
-                settings.pastTopN = 0;
-            }
-
-            if (settings.upcoming === false) {
-                settings.upcomingTopN = 0;
-            }
-
-            for (i in result) {
-
-                if (isPast(result[i].end.dateTime || result[i].end.date)) {
-                    if (pastCounter < settings.pastTopN) {
-                       pastResult.push(result[i]);
-                       pastCounter++;
-                    }
-                } else {
-                    upcomingResultTemp.push(result[i]);
-                }
-            }
-
-            upcomingResultTemp.reverse();
-
-            for (i in upcomingResultTemp) {
-                if (upcomingCounter < settings.upcomingTopN) {
-                    upcomingResult.push(upcomingResultTemp[i]);
-                    upcomingCounter++;
-                }
-            }
-
-            for (i in pastResult) {
-                $pastElem.append(transformationList(pastResult[i], settings.itemsTagName, settings.format));
-            }
-
-            for (i in upcomingResult) {
-                $upcomingElem.append(transformationList(upcomingResult[i], settings.itemsTagName, settings.format));
-            }
-
-            if ($upcomingElem.children().length !== 0) {
-                jQuery(settings.upcomingHeading).insertBefore($upcomingElem);
-            }
-
-            if ($pastElem.children().length !== 0) {
-                jQuery(settings.pastHeading).insertBefore($pastElem);
-            }
-
-        });
+    async function getData(url) {
+        try {
+            const response = await fetch(url);
+            return response.json();
+        } catch (err) {
+            console.error(err);
+        }
     };
 
-    //Compare dates
-    var comp = function(a, b) {
-        return new Date(a.start.dateTime || a.start.date).getTime() - new Date(b.start.dateTime || b.start.date).getTime();
+    const convertToNode = text => {
+        var div = document.createElement('div');
+        div.innerHTML = text;
+        return div.childNodes;
+    }
+
+    const renderList = (data, settings) => {
+        var result = [];
+
+        result = data.items.filter(item => item && item.hasOwnProperty('status') && item.status !== 'cancelled').sort(comp).reverse();
+
+        var pastCounter = 0,
+            upcomingCounter = 0,
+            pastResult = [],
+            upcomingResult = [],
+            upcomingResultTemp = [],
+            upcomingElem = document.querySelector(settings.upcomingSelector),
+            pastElem = document.querySelector(settings.pastSelector),
+            i;
+
+        if (settings.pastTopN === -1) {
+            settings.pastTopN = result.length;
+        }
+
+        if (settings.upcomingTopN === -1) {
+            settings.upcomingTopN = result.length;
+        }
+
+        if (settings.past === false) {
+            settings.pastTopN = 0;
+        }
+
+        if (settings.upcoming === false) {
+            settings.upcomingTopN = 0;
+        }
+
+        for (i in result) {
+
+            if (isPast(result[i].end.dateTime || result[i].end.date)) {
+                if (pastCounter < settings.pastTopN) {
+                    pastResult.push(result[i]);
+                    pastCounter++;
+                }
+            } else {
+                upcomingResultTemp.push(result[i]);
+            }
+        }
+
+        upcomingResultTemp.reverse();
+
+        for (i in upcomingResultTemp) {
+            if (upcomingCounter < settings.upcomingTopN) {
+                upcomingResult.push(upcomingResultTemp[i]);
+                upcomingCounter++;
+            }
+        }
+
+        for (i in pastResult) {
+            pastElem.insertAdjacentHTML('beforeend', transformationList(pastResult[i], settings.itemsTagName, settings.format));
+        }
+
+        for (i in upcomingResult) {
+            upcomingElem.insertAdjacentHTML('beforeend', transformationList(upcomingResult[i], settings.itemsTagName, settings.format));
+        }
+
+        if (upcomingElem.firstChild) {
+            upcomingElem.insertAdjacentHTML('beforebegin', settings.upcomingHeading);
+        }
+
+        if (pastElem.firstChild) {
+            pastElem.insertAdjacentHTML('beforebegin', settings.pastHeading);
+        }
+    };
+
+    //Gets JSON from Google Calendar and transfroms it into html list items and appends it to past or upcoming events list
+    const init = (settings) => {
+        config = settings;
+
+        var finalURL = settings.calendarUrl;
+        if (settings.recurringEvents) {
+            finalURL = finalURL.concat('&singleEvents=true');
+        }
+
+        //Get JSON, parse it, transform into list items and append it to past or upcoming events list
+        getData(finalURL)
+            .then((data) => renderList(data, settings));
     };
 
     //Overwrites defaultSettings values with overrideSettings and adds overrideSettings if non existent in defaultSettings
-    var mergeOptions = function(defaultSettings, overrideSettings){
+    const mergeOptions = (defaultSettings, overrideSettings) => {
         var newObject = {},
             i;
         for (i in defaultSettings) {
@@ -113,7 +121,7 @@ var formatGoogleCalendar = (function() {
         return newObject;
     };
 
-    var isAllDay = function (dateStart, dateEnd) {
+    const isAllDay = (dateStart, dateEnd) => {
       var dateStartFormatted = getDateFormatted(dateStart),
           dateEndFormatted = getDateFormatted(dateEnd);
 
@@ -128,7 +136,7 @@ var formatGoogleCalendar = (function() {
     };
 
     //Get all necessary data (dates, location, summary, description) and creates a list item
-    var transformationList = function(result, tagName, format) {
+    const transformationList = (result, tagName, format) => {
         var dateStart = getDateInfo(result.start.dateTime || result.start.date),
             dateEnd = getDateInfo(result.end.dateTime || result.end.date),
             moreDaysEvent = (typeof result.end.date !== 'undefined'),
@@ -177,7 +185,7 @@ var formatGoogleCalendar = (function() {
     };
 
     //Check if date is later then now
-    var isPast = function(date) {
+    const isPast = date => {
         var compareDate = new Date(date),
             now = new Date();
 
@@ -189,13 +197,13 @@ var formatGoogleCalendar = (function() {
     };
 
     //Get temp array with information abou day in followin format: [day number, month number, year, hours, minutes]
-    var getDateInfo = function(date) {
+    const getDateInfo = date => {
         date = new Date(date);
         return [date.getDate(), date.getMonth(), date.getFullYear(), date.getHours(), date.getMinutes(), 0, 0];
     };
 
     //Get month name according to index
-    var getMonthName = function (month) {
+    const getMonthName = month => {
         var monthNames = [
             'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'
         ];
@@ -203,7 +211,7 @@ var formatGoogleCalendar = (function() {
         return monthNames[month];
     };
 
-    var getDayName = function (day) {
+    const getDayName = day => {
       var dayNames = [
           'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'
       ];
@@ -211,37 +219,31 @@ var formatGoogleCalendar = (function() {
       return dayNames[day];
     };
 
-    var getDayNameFormatted = function (dateFormatted) {
-      return getDayName(getDateFormatted(dateFormatted).getDay()) + ' ';
-    };
+    const getDayNameFormatted = dateFormatted => getDayName(getDateFormatted(dateFormatted).getDay()) + ' ';
 
-    var getDateFormatted = function (dateInfo) {
-      return new Date(dateInfo[2], dateInfo[1], dateInfo[0], dateInfo[3], dateInfo[4] + 0, 0);
+    const getDateFormatted = dateInfo => new Date(dateInfo[2], dateInfo[1], dateInfo[0], dateInfo[3], dateInfo[4] + 0, 0);
+
+    //Compare dates
+    const comp = (a, b) => new Date(a.start.dateTime || a.start.date).getTime() - new Date(b.start.dateTime || b.start.date).getTime();
+
+    const calculateDate = (dateInfo, amount) => {
+        var date = getDateFormatted(dateInfo);
+        date.setTime(date.getTime() + amount);
+        return getDateInfo(date);
     };
 
     //Add one day
-    var addOneDay = function (dateInfo) {
-     var date = getDateFormatted(dateInfo);
-     date.setTime(date.getTime() + 86400000);
-     return getDateInfo(date);
-     };
+    const addOneDay = (dateInfo) => calculateDate(dateInfo, 86400000);
     
     //Subtract one day
-    var subtractOneDay = function (dateInfo) {
-      var date = getDateFormatted(dateInfo);
-      date.setTime(date.getTime() - 86400000);
-      return getDateInfo(date);
-    };
+    const subtractOneDay = (dateInfo) => calculateDate(dateInfo, -86400000);
 
     //Subtract one minute
-    var subtractOneMinute = function (dateInfo) {
-      var date = getDateFormatted(dateInfo);
-      date.setTime(date.getTime() - 60000);
-      return getDateInfo(date);
-    };
+    const subtractOneMinute = (dateInfo) => calculateDate(dateInfo, -60000);
+
 
     //Transformations for formatting date into human readable format
-    var formatDateSameDay = function(dateStart, dateEnd, moreDaysEvent, isAllDayEvent, dayNames) {
+    const formatDateSameDay = (dateStart, dateEnd, moreDaysEvent, isAllDayEvent, dayNames) => {
         var formattedTime = '',
             dayNameStart = '';
 
@@ -257,7 +259,7 @@ var formatGoogleCalendar = (function() {
         return dayNameStart + getMonthName(dateStart[1]) + ' ' + dateStart[0] + ', ' + dateStart[2] + formattedTime;
     };
 
-    var formatDateOneDay = function(dateStart, dayNames) {
+    const formatDateOneDay = (dateStart, dayNames) => {
       var dayName = '';
 
       if (dayNames) {
@@ -267,7 +269,7 @@ var formatGoogleCalendar = (function() {
       return dayName + getMonthName(dateStart[1]) + ' ' + dateStart[0] + ', ' + dateStart[2];
     };
 
-    var formatDateDifferentDay = function(dateStart, dateEnd, dayNames) {
+    const formatDateDifferentDay = (dateStart, dateEnd, dayNames) => {
       var dayNameStart = '',
           dayNameEnd = '';
 
@@ -279,7 +281,7 @@ var formatGoogleCalendar = (function() {
         return dayNameStart + getMonthName(dateStart[1]) + ' ' + dateStart[0] + '-' + dayNameEnd + dateEnd[0] + ', ' + dateStart[2];
     };
 
-    var formatDateDifferentMonth = function(dateStart, dateEnd, dayNames) {
+    const formatDateDifferentMonth = (dateStart, dateEnd, dayNames) => {
       var dayNameStart = '',
           dayNameEnd = '';
 
@@ -291,7 +293,7 @@ var formatGoogleCalendar = (function() {
         return dayNameStart + getMonthName(dateStart[1]) + ' ' + dateStart[0] + '-' + dayNameEnd + getMonthName(dateEnd[1]) + ' ' + dateEnd[0] + ', ' + dateStart[2];
     };
 
-    var formatDateDifferentYear = function(dateStart, dateEnd, dayNames) {
+    const formatDateDifferentYear = (dateStart, dateEnd, dayNames) => {
       var dayNameStart = '',
           dayNameEnd = '';
 
@@ -304,7 +306,7 @@ var formatGoogleCalendar = (function() {
     };
 
     //Check differences between dates and format them
-    var getFormattedDate = function(dateStart, dateEnd, moreDaysEvent, isAllDayEvent, dayNames) {
+    const getFormattedDate = (dateStart, dateEnd, moreDaysEvent, isAllDayEvent, dayNames) => {
         var formattedDate = '';
 
         if (dateStart[0] === dateEnd[0]) {
@@ -348,7 +350,7 @@ var formatGoogleCalendar = (function() {
         return formattedDate;
     };
 
-    var getFormattedTime = function (date) {
+    const getFormattedTime = (date) => {
         var formattedTime = '',
             period = 'AM',
             hour = date[3],
@@ -376,7 +378,7 @@ var formatGoogleCalendar = (function() {
         return formattedTime;
     };
 
-    return {
+    return { 
         init: function (settingsOverride) {
             var settings = {
                 calendarUrl: 'https://www.googleapis.com/calendar/v3/calendars/milan.kacurak@gmail.com/events?key=AIzaSyCR3-ptjHE-_douJsn8o20oRwkxt-zHStY',

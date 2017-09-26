@@ -4,8 +4,6 @@ Example: <a target="_blank" href="http://www.kacurak.com/formatgooglecalendar/ex
 ## How to install
 ###Step 1: Link required files
 <pre><code>
-&lt;!-- jQuery library --&gt;<br>
-&lt;script src="//code.jquery.com/jquery-1.11.3.min.js"&gt;&lt;/script&gt;<br>
 &lt;!-- FormatGoogleCalendar Javascript file --&gt;<br>
 &lt;script src="/js/format-google-calendar.js"&gt;&lt;/script&gt;<br>
 </code></pre>
