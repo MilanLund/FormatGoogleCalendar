@@ -1,16 +1,27 @@
 {
   "name": "FormatGoogleCalendar",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Script gets public Google calendar and displays list of events.",
-  "author": "Milan Kacurak <milan@kacurak.com>",
+  "author": "Milan Lund <hello@milanlund.com>",
   "readme": "README.md",
+  "scripts": {
+    "babel": "babel --presets es2015 src/app.js -o dist/format-google-calendar.js",
+    "start": "webpack-dev-server --open",
+    "webpack": "webpack --watch"
+  },
   "repository": {
-  	"type": "git",
-  	"url": "https://github.com/MilanKacurak/FormatGoogleCalendar.git"
+    "type": "git",
+    "url": "https://github.com/MilanKacurak/FormatGoogleCalendar.git"
   },
   "devDependencies": {
-  	"grunt": "~1.0.1",
-    "grunt-contrib-jshint": "~1.0.0",
-    "grunt-contrib-uglify": "~2.0.0"
+    "babel-core": "^6.26.0",
+    "babel-loader": "^7.1.2",
+    "babel-plugin-transform-async-to-generator": "^6.24.1",
+    "babel-polyfill": "^6.26.0",
+    "babel-preset-es2015": "^6.24.1",
+    "compression-webpack-plugin": "^1.0.0",
+    "uglifyjs-webpack-plugin": "^0.4.6",
+    "webpack": "^3.6.0",
+    "webpack-dev-server": "^2.8.2"
   }
 }
