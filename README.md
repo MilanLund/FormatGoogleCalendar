@@ -2,10 +2,10 @@
 Script gets public Google calendar and displays list of events.<br>
 Example: <a target="_blank" href="http://www.kacurak.com/formatgooglecalendar/example.html">http://www.kacurak.com/formatgooglecalendar/example.html</a>
 ## How to install
-### Step 1: Link required files
-
+### Step 1: Link the library
+The library could be found in the <b>dist</b> folder of this repository.
 <pre><code>&lt;!-- FormatGoogleCalendar Javascript file --&gt;<br>
-&lt;script src="/js/format-google-calendar.js"&gt;&lt;/script&gt;</code></pre>
+&lt;script src="/js/format-google-calendar.min.js"&gt;&lt;/script&gt;</code></pre>
 
 ### Step 2: Create HTML markup
 
