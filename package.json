@@ -2,7 +2,7 @@
   "name": "FormatGoogleCalendar",
   "version": "0.1.0",
   "description": "Script gets public Google calendar and displays list of events.",
-  "author": "Milan Kacurak <milan@kacurak.com>",
+  "author": "Milan Lund <hello@milanlund.com>",
   "readme": "README.md",
   "scripts": {
     "babel": "babel --presets es2015 src/app.js -o dist/format-google-calendar.js",

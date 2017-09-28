@@ -122,36 +122,47 @@ window.formatGoogleCalendar = (() => {
     };
 
     const isAllDay = (dateStart, dateEnd) => {
-      var dateStartFormatted = getDateFormatted(dateStart),
-          dateEndFormatted = getDateFormatted(dateEnd);
+        var dateEndTemp = subtractOneDay(dateEnd);
+        var isAll = true;
+        
+        for (var i = 0; i < 3; i++) {
+            if (dateStart[i] !== dateEndTemp[i]) {
+                isAll = false;
+            }
+        } 
 
-      //if start date is midnight and the end date a following day midnight as well
-      if ((dateStartFormatted.getTime() === dateEndFormatted.getTime() - 86400000) &&
-          dateStartFormatted.getMinutes() === 0 &&
-          dateStartFormatted.getHours() === 0) {
-        return true;
-      }
-
-      return false;
+        return isAll;
     };
+
+    const isSameDay = (dateStart, dateEnd) => {
+        var isSame = true;
+
+        for (var i = 0; i < 3; i++) {
+            if (dateStart[i] !== dateEnd[i]) {
+                isSame = false;
+            }
+        } 
+
+        return isSame;
+    }
 
     //Get all necessary data (dates, location, summary, description) and creates a list item
     const transformationList = (result, tagName, format) => {
         var dateStart = getDateInfo(result.start.dateTime || result.start.date),
             dateEnd = getDateInfo(result.end.dateTime || result.end.date),
-            moreDaysEvent = (typeof result.end.date !== 'undefined'),
             dayNames = config.dayNames,
+            moreDaysEvent = true,
             isAllDayEvent = isAllDay(dateStart, dateEnd);
 
-        if (moreDaysEvent) {
-          dateStart = addOneDay(dateStart);
+        if (typeof result.end.date !== 'undefined') {
+            dateEnd = subtractOneDay(dateEnd);
         }
 
-        if (isAllDayEvent) {
-          dateEnd = subtractOneMinute(dateEnd);
+        if (isSameDay(dateStart, dateEnd)) {
+            moreDaysEvent = false;
         }
 
-        var dateFormatted = getFormattedDate(dateStart, dateEnd, moreDaysEvent, isAllDayEvent, dayNames),
+        var dateFormatted = getFormattedDate(dateStart, dateEnd, dayNames, moreDaysEvent, isAllDayEvent),
             output = '<' + tagName + '>',
             summary = result.summary || '',
             description = result.description || '',
@@ -242,7 +253,7 @@ window.formatGoogleCalendar = (() => {
 
 
     //Transformations for formatting date into human readable format
-    const formatDateSameDay = (dateStart, dateEnd, moreDaysEvent, isAllDayEvent, dayNames) => {
+    const formatDateSameDay = (dateStart, dateEnd, dayNames, moreDaysEvent, isAllDayEvent) => {
         var formattedTime = '',
             dayNameStart = '';
 
@@ -305,14 +316,14 @@ window.formatGoogleCalendar = (() => {
     };
 
     //Check differences between dates and format them
-    const getFormattedDate = (dateStart, dateEnd, moreDaysEvent, isAllDayEvent, dayNames) => {
+    const getFormattedDate = (dateStart, dateEnd, dayNames, moreDaysEvent, isAllDayEvent) => {
         var formattedDate = '';
 
         if (dateStart[0] === dateEnd[0]) {
             if (dateStart[1] === dateEnd[1]) {
                 if (dateStart[2] === dateEnd[2]) {
                     //month day, year
-                    formattedDate = formatDateSameDay(dateStart, dateEnd, moreDaysEvent, isAllDayEvent, dayNames);
+                    formattedDate = formatDateSameDay(dateStart, dateEnd, dayNames, moreDaysEvent, isAllDayEvent);
                 } else {
                     //month day, year - month day, year
                     formattedDate = formatDateDifferentYear(dateStart, dateEnd, dayNames);
