@@ -17,7 +17,7 @@ var formatGoogleCalendar = (function() {
         config = settings;
         var finalURL = settings.calendarUrl;
 
-        if(settings.recurringEvents) finalURL = finalURL.concat("&singleEvents=true");
+        if(settings.recurringEvents) finalURL = finalURL.concat("&singleEvents=true&orderBy=starttime");
 
         //Get JSON, parse it, transform into list items and append it to past or upcoming events list
         jQuery.getJSON(finalURL, function(data) {
