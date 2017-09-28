@@ -2,15 +2,20 @@
 Script gets public Google calendar and displays list of events.<br>
 Example: <a target="_blank" href="http://www.kacurak.com/formatgooglecalendar/example.html">http://www.kacurak.com/formatgooglecalendar/example.html</a>
 ## How to install
-###Step 1: Link required files
+### Step 1: Link required files
+
 <pre><code>&lt;!-- FormatGoogleCalendar Javascript file --&gt;<br>
 &lt;script src="/js/format-google-calendar.js"&gt;&lt;/script&gt;</code></pre>
-###Step 2: Create HTML markup
+
+### Step 2: Create HTML markup
+
 <pre><code>&lt;ul id="events-upcoming"&gt;<br>
 &lt;/ul&gt;<br>
 &lt;ul id="events-past"&gt;<br>
 &lt;/ul&gt;</code></pre>
-###Step 3: Call the FormatGoogleCalendar
+
+### Step 3: Call the FormatGoogleCalendar
+
 <pre><code>formatGoogleCalendar.init({});</code></pre>
 ## Options
 * calendarUrl (string, url of a public Google calendar)<br>
@@ -30,7 +35,7 @@ Example: <a target="_blank" href="http://www.kacurak.com/formatgooglecalendar/ex
 * pastHeading (string, heading of past events)<br>
 * format (array, describes format in which should be data displayed, it is a list of strings where wildcards are <code><b>\*date\*</b>, <b>\*summary\*</b>, <b>\*description\*</b>, <b>\*location\*</b></code>, if a string is a different value than a wildcard the string will be appended to the final output)<br>
 ## Notes
-You can customize <code><b>calendarUrl</b></code> with use of various parameters which are listed in the <a target="_blank" href="https://developers.google.com/google-apps/calendar/v3/reference/events/listGoogle"> Google Calendar API page</a>. Following options of this library: <code><b>recurringEvents</b></code>, <code><b>timeMin</b></code>, <code><b>timeMax</b></code> operate directly with the Google Calendar API url parameters.
+You can customize <code><b>calendarUrl</b></code> with use of various parameters which are listed in the <a target="_blank" href="https://developers.google.com/google-apps/calendar/v3/reference/events/list"> Google Calendar API page</a>. Following options of this library: <code><b>recurringEvents</b></code>, <code><b>timeMin</b></code>, <code><b>timeMax</b></code> operate directly with the Google Calendar API url parameters.
 
 ## Example of initialization
 <pre><code>formatGoogleCalendar.init({<br>
@@ -47,5 +52,7 @@ You can customize <code><b>calendarUrl</b></code> with use of various parameters
         pastSelector: '#events-past',<br>
         upcomingHeading: '&lt;h2&gt;Upcoming events&lt;/h2&gt;',<br>
         pastHeading: '&lt;h2&gt;Past events&lt;/h2&gt;',<br>
-        format: ['*date*', ': ', '*summary*', ' &mdash; ', '*description*', ' in ', '*location*']<br>
+        format: ['*date*', ': ', '*summary*', ' &mdash; ', '*description*', ' in ', '*location*'],<br>
+        timeMin: '2016-06-03T10:00:00-07:00',<br>
+        timeMax: '2020-06-03T10:00:00-07:00'<br>
 });</code></pre>
