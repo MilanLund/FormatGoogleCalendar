@@ -35,7 +35,7 @@ module.exports = {
             include: /\.min\.js$/,
             sourceMap: true,
             parallel: true,
-            sourceMap: true
+            sourceMap: false
         })
     ]  
 };
