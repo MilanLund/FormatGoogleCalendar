@@ -14,6 +14,7 @@ window.formatGoogleCalendar = (() => {
     const renderList = (data, settings) => {
         var result = [];
 
+        //Remove cancelled events, sort by date
         result = data.items.filter(item => item && item.hasOwnProperty('status') && item.status !== 'cancelled').sort(comp).reverse();
 
         var pastCounter = 0,
@@ -84,9 +85,18 @@ window.formatGoogleCalendar = (() => {
         config = settings;
 
         var finalURL = settings.calendarUrl;
+
         if (settings.recurringEvents) {
-            finalURL = finalURL.concat('&singleEvents=true');
+            finalURL = finalURL.concat('&singleEvents=true&orderBy=starttime');
         }
+
+        if (settings.timeMin) {
+            finalURL = finalURL.concat('&timeMin=' + settings.timeMin);
+        };
+        
+        if (settings.timeMax) {
+            finalURL = finalURL.concat('&timeMax=' + settings.timeMax);
+        };
 
         //Get JSON, parse it, transform into list items and append it to past or upcoming events list
         var request = new XMLHttpRequest();
@@ -404,7 +414,9 @@ window.formatGoogleCalendar = (() => {
                 pastSelector: '#events-past',
                 upcomingHeading: '<h2>Upcoming events</h2>',
                 pastHeading: '<h2>Past events</h2>',
-                format: ['*date*', ': ', '*summary*', ' &mdash; ', '*description*', ' in ', '*location*']
+                format: ['*date*', ': ', '*summary*', ' &mdash; ', '*description*', ' in ', '*location*'],
+                timeMin: undefined,
+                timeMax: undefined
             };
 
             settings = mergeOptions(settings, settingsOverride);

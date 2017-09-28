@@ -1,6 +1,6 @@
 {
   "name": "FormatGoogleCalendar",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Script gets public Google calendar and displays list of events.",
   "author": "Milan Lund <hello@milanlund.com>",
   "readme": "README.md",

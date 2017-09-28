@@ -1,2 +1,509 @@
-!function(e){function t(r){if(n[r])return n[r].exports;var a=n[r]={i:r,l:!1,exports:{}};return e[r].call(a.exports,a,a.exports,t),a.l=!0,a.exports}var n={};t.m=e,t.c=n,t.d=function(e,n,r){t.o(e,n)||Object.defineProperty(e,n,{configurable:!1,enumerable:!0,get:r})},t.n=function(e){var n=e&&e.__esModule?function(){return e.default}:function(){return e};return t.d(n,"a",n),n},t.o=function(e,t){return Object.prototype.hasOwnProperty.call(e,t)},t.p="",t(t.s=0)}([function(e,t,n){"use strict";window.formatGoogleCalendar=function(){var e,t=function(e,t){var n=[];n=e.items.filter(function(e){return e&&e.hasOwnProperty("status")&&"cancelled"!==e.status}).sort(l).reverse();var r,a=0,o=0,u=[],c=[],p=[],d=document.querySelector(t.upcomingSelector),m=document.querySelector(t.pastSelector);-1===t.pastTopN&&(t.pastTopN=n.length),-1===t.upcomingTopN&&(t.upcomingTopN=n.length),!1===t.past&&(t.pastTopN=0),!1===t.upcoming&&(t.upcomingTopN=0);for(r in n)s(n[r].end.dateTime||n[r].end.date)?a<t.pastTopN&&(u.push(n[r]),a++):p.push(n[r]);p.reverse();for(r in p)o<t.upcomingTopN&&(c.push(p[r]),o++);for(r in u)m.insertAdjacentHTML("beforeend",i(u[r],t.itemsTagName,t.format));for(r in c)d.insertAdjacentHTML("beforeend",i(c[r],t.itemsTagName,t.format));d.firstChild&&d.insertAdjacentHTML("beforebegin",t.upcomingHeading),m.firstChild&&m.insertAdjacentHTML("beforebegin",t.pastHeading)},n=function(n){e=n;var r=n.calendarUrl;n.recurringEvents&&(r=r.concat("&singleEvents=true"));var a=new XMLHttpRequest;a.open("GET",r,!0),a.onload=function(){if(a.status>=200&&a.status<400){var e=JSON.parse(a.responseText);t(e,n)}else console.error(err)},a.onerror=function(){console.error(err)},a.send()},r=function(e,t){var n,r={};for(n in e)r[n]=e[n];for(n in t)r[n]=t[n];return r},a=function(e,t){for(var n=g(t),r=!0,a=0;a<3;a++)e[a]!==n[a]&&(r=!1);return r},o=function(e,t){for(var n=!0,r=0;r<3;r++)e[r]!==t[r]&&(n=!1);return n},i=function(t,n,r){var i=u(t.start.dateTime||t.start.date),s=u(t.end.dateTime||t.end.date),c=e.dayNames,p=!0,d=a(i,s);void 0!==t.end.date&&(s=g(s)),o(i,s)&&(p=!1);var m,f=N(i,s,c,p,d),l="<"+n+">",v=t.summary||"",T=t.description||"",y=t.location||"";for(m=0;m<r.length;m++)r[m]=r[m].toString(),"*summary*"===r[m]?l=l.concat('<span class="summary">'+v+"</span>"):"*date*"===r[m]?l=l.concat('<span class="date">'+f+"</span>"):"*description*"===r[m]?l=l.concat('<span class="description">'+T+"</span>"):"*location*"===r[m]?l=l.concat('<span class="location">'+y+"</span>"):("*location*"===r[m+1]&&""!==y||"*summary*"===r[m+1]&&""!==v||"*date*"===r[m+1]&&""!==f||"*description*"===r[m+1]&&""!==T)&&(l=l.concat(r[m]));return l+"</"+n+">"},s=function(e){var t=new Date(e);return(new Date).getTime()>t.getTime()},u=function(e){return e=new Date(e),[e.getDate(),e.getMonth(),e.getFullYear(),e.getHours(),e.getMinutes(),0,0]},c=function(e){return["January","February","March","April","May","June","July","August","September","October","November","December"][e]},p=function(e){return["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"][e]},d=function(e,t){var n=f(e);return n.setTime(n.getTime()+t),u(n)},m=function(e){return p(f(e).getDay())+" "},f=function(e){return new Date(e[2],e[1],e[0],e[3],e[4]+0,0)},l=function(e,t){return new Date(e.start.dateTime||e.start.date).getTime()-new Date(t.start.dateTime||t.start.date).getTime()},g=function(e){return d(e,-864e5)},v=function(t,n,r,a,o){var i="",s="";return r&&(s=m(t)),!e.sameDayTimes||a||o||(i=" from "+b(t)+" - "+b(n)),s+c(t[1])+" "+t[0]+", "+t[2]+i},T=function(e,t,n){var r="",a="";return n&&(r=m(e),a=m(t)),r+c(e[1])+" "+e[0]+"-"+a+t[0]+", "+e[2]},y=function(e,t,n){var r="",a="";return n&&(r=m(e),a=m(t)),r+c(e[1])+" "+e[0]+"-"+a+c(t[1])+" "+t[0]+", "+e[2]},h=function(e,t,n){var r="",a="";return n&&(r=m(e),a=m(t)),r+c(e[1])+" "+e[0]+", "+e[2]+"-"+a+c(t[1])+" "+t[0]+", "+t[2]},N=function(e,t,n,r,a){return e[0]===t[0]?e[1]===t[1]?e[2]===t[2]?v(e,t,n,r,a):h(e,t,n):e[2]===t[2]?y(e,t,n):h(e,t,n):e[1]===t[1]?e[2]===t[2]?T(e,t,n):h(e,t,n):e[2]===t[2]?y(e,t,n):h(e,t,n)},b=function(e){var t="AM",n=e[3],r=e[4];return n>=12&&(t="PM",n>=13&&(n-=12)),0===n&&(n=12),r=(r<10?"0":"")+r,n+":"+r+t};return{init:function(e){var t={calendarUrl:"https://www.googleapis.com/calendar/v3/calendars/milan.kacurak@gmail.com/events?key=AIzaSyCR3-ptjHE-_douJsn8o20oRwkxt-zHStY",past:!0,upcoming:!0,sameDayTimes:!0,dayNames:!0,pastTopN:-1,upcomingTopN:-1,recurringEvents:!0,itemsTagName:"li",upcomingSelector:"#events-upcoming",pastSelector:"#events-past",upcomingHeading:"<h2>Upcoming events</h2>",pastHeading:"<h2>Past events</h2>",format:["*date*",": ","*summary*"," &mdash; ","*description*"," in ","*location*"]};t=r(t,e),n(t)}}}()}]);
+/******/ (function(modules) { // webpackBootstrap
+/******/ 	// The module cache
+/******/ 	var installedModules = {};
+/******/
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/
+/******/ 		// Check if module is in cache
+/******/ 		if(installedModules[moduleId]) {
+/******/ 			return installedModules[moduleId].exports;
+/******/ 		}
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = installedModules[moduleId] = {
+/******/ 			i: moduleId,
+/******/ 			l: false,
+/******/ 			exports: {}
+/******/ 		};
+/******/
+/******/ 		// Execute the module function
+/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+/******/
+/******/ 		// Flag the module as loaded
+/******/ 		module.l = true;
+/******/
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/
+/******/
+/******/ 	// expose the modules object (__webpack_modules__)
+/******/ 	__webpack_require__.m = modules;
+/******/
+/******/ 	// expose the module cache
+/******/ 	__webpack_require__.c = installedModules;
+/******/
+/******/ 	// define getter function for harmony exports
+/******/ 	__webpack_require__.d = function(exports, name, getter) {
+/******/ 		if(!__webpack_require__.o(exports, name)) {
+/******/ 			Object.defineProperty(exports, name, {
+/******/ 				configurable: false,
+/******/ 				enumerable: true,
+/******/ 				get: getter
+/******/ 			});
+/******/ 		}
+/******/ 	};
+/******/
+/******/ 	// getDefaultExport function for compatibility with non-harmony modules
+/******/ 	__webpack_require__.n = function(module) {
+/******/ 		var getter = module && module.__esModule ?
+/******/ 			function getDefault() { return module['default']; } :
+/******/ 			function getModuleExports() { return module; };
+/******/ 		__webpack_require__.d(getter, 'a', getter);
+/******/ 		return getter;
+/******/ 	};
+/******/
+/******/ 	// Object.prototype.hasOwnProperty.call
+/******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
+/******/
+/******/ 	// __webpack_public_path__
+/******/ 	__webpack_require__.p = "";
+/******/
+/******/ 	// Load entry module and return exports
+/******/ 	return __webpack_require__(__webpack_require__.s = 0);
+/******/ })
+/************************************************************************/
+/******/ ([
+/* 0 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+/**
+ * Format Google Calendar JSON output into human readable list
+ *
+ * Copyright 2017, Milan Lund
+ *
+ */
+
+window.formatGoogleCalendar = function () {
+
+    'use strict';
+
+    var config;
+
+    var renderList = function renderList(data, settings) {
+        var result = [];
+
+        //Remove cancelled events, sort by date
+        result = data.items.filter(function (item) {
+            return item && item.hasOwnProperty('status') && item.status !== 'cancelled';
+        }).sort(comp).reverse();
+
+        var pastCounter = 0,
+            upcomingCounter = 0,
+            pastResult = [],
+            upcomingResult = [],
+            upcomingResultTemp = [],
+            upcomingElem = document.querySelector(settings.upcomingSelector),
+            pastElem = document.querySelector(settings.pastSelector),
+            i;
+
+        if (settings.pastTopN === -1) {
+            settings.pastTopN = result.length;
+        }
+
+        if (settings.upcomingTopN === -1) {
+            settings.upcomingTopN = result.length;
+        }
+
+        if (settings.past === false) {
+            settings.pastTopN = 0;
+        }
+
+        if (settings.upcoming === false) {
+            settings.upcomingTopN = 0;
+        }
+
+        for (i in result) {
+
+            if (isPast(result[i].end.dateTime || result[i].end.date)) {
+                if (pastCounter < settings.pastTopN) {
+                    pastResult.push(result[i]);
+                    pastCounter++;
+                }
+            } else {
+                upcomingResultTemp.push(result[i]);
+            }
+        }
+
+        upcomingResultTemp.reverse();
+
+        for (i in upcomingResultTemp) {
+            if (upcomingCounter < settings.upcomingTopN) {
+                upcomingResult.push(upcomingResultTemp[i]);
+                upcomingCounter++;
+            }
+        }
+
+        for (i in pastResult) {
+            pastElem.insertAdjacentHTML('beforeend', transformationList(pastResult[i], settings.itemsTagName, settings.format));
+        }
+
+        for (i in upcomingResult) {
+            upcomingElem.insertAdjacentHTML('beforeend', transformationList(upcomingResult[i], settings.itemsTagName, settings.format));
+        }
+
+        if (upcomingElem.firstChild) {
+            upcomingElem.insertAdjacentHTML('beforebegin', settings.upcomingHeading);
+        }
+
+        if (pastElem.firstChild) {
+            pastElem.insertAdjacentHTML('beforebegin', settings.pastHeading);
+        }
+    };
+
+    //Gets JSON from Google Calendar and transfroms it into html list items and appends it to past or upcoming events list
+    var _init = function _init(settings) {
+        config = settings;
+
+        var finalURL = settings.calendarUrl;
+
+        if (settings.recurringEvents) {
+            finalURL = finalURL.concat('&singleEvents=true&orderBy=starttime');
+        }
+
+        if (settings.timeMin) {
+            finalURL = finalURL.concat('&timeMin=' + settings.timeMin);
+        };
+
+        if (settings.timeMax) {
+            finalURL = finalURL.concat('&timeMax=' + settings.timeMax);
+        };
+
+        //Get JSON, parse it, transform into list items and append it to past or upcoming events list
+        var request = new XMLHttpRequest();
+        request.open('GET', finalURL, true);
+
+        request.onload = function () {
+            if (request.status >= 200 && request.status < 400) {
+                var data = JSON.parse(request.responseText);
+                renderList(data, settings);
+            } else {
+                console.error(err);
+            }
+        };
+
+        request.onerror = function () {
+            console.error(err);
+        };
+
+        request.send();
+    };
+
+    //Overwrites defaultSettings values with overrideSettings and adds overrideSettings if non existent in defaultSettings
+    var mergeOptions = function mergeOptions(defaultSettings, overrideSettings) {
+        var newObject = {},
+            i;
+        for (i in defaultSettings) {
+            newObject[i] = defaultSettings[i];
+        }
+        for (i in overrideSettings) {
+            newObject[i] = overrideSettings[i];
+        }
+        return newObject;
+    };
+
+    var isAllDay = function isAllDay(dateStart, dateEnd) {
+        var dateEndTemp = subtractOneDay(dateEnd);
+        var isAll = true;
+
+        for (var i = 0; i < 3; i++) {
+            if (dateStart[i] !== dateEndTemp[i]) {
+                isAll = false;
+            }
+        }
+
+        return isAll;
+    };
+
+    var isSameDay = function isSameDay(dateStart, dateEnd) {
+        var isSame = true;
+
+        for (var i = 0; i < 3; i++) {
+            if (dateStart[i] !== dateEnd[i]) {
+                isSame = false;
+            }
+        }
+
+        return isSame;
+    };
+
+    //Get all necessary data (dates, location, summary, description) and creates a list item
+    var transformationList = function transformationList(result, tagName, format) {
+        var dateStart = getDateInfo(result.start.dateTime || result.start.date),
+            dateEnd = getDateInfo(result.end.dateTime || result.end.date),
+            dayNames = config.dayNames,
+            moreDaysEvent = true,
+            isAllDayEvent = isAllDay(dateStart, dateEnd);
+
+        if (typeof result.end.date !== 'undefined') {
+            dateEnd = subtractOneDay(dateEnd);
+        }
+
+        if (isSameDay(dateStart, dateEnd)) {
+            moreDaysEvent = false;
+        }
+
+        var dateFormatted = getFormattedDate(dateStart, dateEnd, dayNames, moreDaysEvent, isAllDayEvent),
+            output = '<' + tagName + '>',
+            summary = result.summary || '',
+            description = result.description || '',
+            location = result.location || '',
+            i;
+
+        for (i = 0; i < format.length; i++) {
+            format[i] = format[i].toString();
+
+            if (format[i] === '*summary*') {
+                output = output.concat('<span class="summary">' + summary + '</span>');
+            } else if (format[i] === '*date*') {
+                output = output.concat('<span class="date">' + dateFormatted + '</span>');
+            } else if (format[i] === '*description*') {
+                output = output.concat('<span class="description">' + description + '</span>');
+            } else if (format[i] === '*location*') {
+                output = output.concat('<span class="location">' + location + '</span>');
+            } else {
+                if (format[i + 1] === '*location*' && location !== '' || format[i + 1] === '*summary*' && summary !== '' || format[i + 1] === '*date*' && dateFormatted !== '' || format[i + 1] === '*description*' && description !== '') {
+
+                    output = output.concat(format[i]);
+                }
+            }
+        }
+
+        return output + '</' + tagName + '>';
+    };
+
+    //Check if date is later then now
+    var isPast = function isPast(date) {
+        var compareDate = new Date(date),
+            now = new Date();
+
+        if (now.getTime() > compareDate.getTime()) {
+            return true;
+        }
+
+        return false;
+    };
+
+    //Get temp array with information abou day in followin format: [day number, month number, year, hours, minutes]
+    var getDateInfo = function getDateInfo(date) {
+        date = new Date(date);
+        return [date.getDate(), date.getMonth(), date.getFullYear(), date.getHours(), date.getMinutes(), 0, 0];
+    };
+
+    //Get month name according to index
+    var getMonthName = function getMonthName(month) {
+        var monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+        return monthNames[month];
+    };
+
+    var getDayName = function getDayName(day) {
+        var dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+        return dayNames[day];
+    };
+
+    var calculateDate = function calculateDate(dateInfo, amount) {
+        var date = getDateFormatted(dateInfo);
+        date.setTime(date.getTime() + amount);
+        return getDateInfo(date);
+    };
+
+    var getDayNameFormatted = function getDayNameFormatted(dateFormatted) {
+        return getDayName(getDateFormatted(dateFormatted).getDay()) + ' ';
+    };
+
+    var getDateFormatted = function getDateFormatted(dateInfo) {
+        return new Date(dateInfo[2], dateInfo[1], dateInfo[0], dateInfo[3], dateInfo[4] + 0, 0);
+    };
+
+    //Compare dates
+    var comp = function comp(a, b) {
+        return new Date(a.start.dateTime || a.start.date).getTime() - new Date(b.start.dateTime || b.start.date).getTime();
+    };
+
+    //Add one day
+    var addOneDay = function addOneDay(dateInfo) {
+        return calculateDate(dateInfo, 86400000);
+    };
+
+    //Subtract one day
+    var subtractOneDay = function subtractOneDay(dateInfo) {
+        return calculateDate(dateInfo, -86400000);
+    };
+
+    //Subtract one minute
+    var subtractOneMinute = function subtractOneMinute(dateInfo) {
+        return calculateDate(dateInfo, -60000);
+    };
+
+    //Transformations for formatting date into human readable format
+    var formatDateSameDay = function formatDateSameDay(dateStart, dateEnd, dayNames, moreDaysEvent, isAllDayEvent) {
+        var formattedTime = '',
+            dayNameStart = '';
+
+        if (dayNames) {
+            dayNameStart = getDayNameFormatted(dateStart);
+        }
+
+        if (config.sameDayTimes && !moreDaysEvent && !isAllDayEvent) {
+            formattedTime = ' from ' + getFormattedTime(dateStart) + ' - ' + getFormattedTime(dateEnd);
+        }
+
+        //month day, year time-time
+        return dayNameStart + getMonthName(dateStart[1]) + ' ' + dateStart[0] + ', ' + dateStart[2] + formattedTime;
+    };
+
+    var formatDateOneDay = function formatDateOneDay(dateStart, dayNames) {
+        var dayName = '';
+
+        if (dayNames) {
+            dayName = getDayNameFormatted(dateStart);
+        }
+        //month day, year
+        return dayName + getMonthName(dateStart[1]) + ' ' + dateStart[0] + ', ' + dateStart[2];
+    };
+
+    var formatDateDifferentDay = function formatDateDifferentDay(dateStart, dateEnd, dayNames) {
+        var dayNameStart = '',
+            dayNameEnd = '';
+
+        if (dayNames) {
+            dayNameStart = getDayNameFormatted(dateStart);
+            dayNameEnd = getDayNameFormatted(dateEnd);
+        }
+        //month day-day, year
+        return dayNameStart + getMonthName(dateStart[1]) + ' ' + dateStart[0] + '-' + dayNameEnd + dateEnd[0] + ', ' + dateStart[2];
+    };
+
+    var formatDateDifferentMonth = function formatDateDifferentMonth(dateStart, dateEnd, dayNames) {
+        var dayNameStart = '',
+            dayNameEnd = '';
+
+        if (dayNames) {
+            dayNameStart = getDayNameFormatted(dateStart);
+            dayNameEnd = getDayNameFormatted(dateEnd);
+        }
+        //month day - month day, year
+        return dayNameStart + getMonthName(dateStart[1]) + ' ' + dateStart[0] + '-' + dayNameEnd + getMonthName(dateEnd[1]) + ' ' + dateEnd[0] + ', ' + dateStart[2];
+    };
+
+    var formatDateDifferentYear = function formatDateDifferentYear(dateStart, dateEnd, dayNames) {
+        var dayNameStart = '',
+            dayNameEnd = '';
+
+        if (dayNames) {
+            dayNameStart = getDayNameFormatted(dateStart);
+            dayNameEnd = getDayNameFormatted(dateEnd);
+        }
+        //month day, year - month day, year
+        return dayNameStart + getMonthName(dateStart[1]) + ' ' + dateStart[0] + ', ' + dateStart[2] + '-' + dayNameEnd + getMonthName(dateEnd[1]) + ' ' + dateEnd[0] + ', ' + dateEnd[2];
+    };
+
+    //Check differences between dates and format them
+    var getFormattedDate = function getFormattedDate(dateStart, dateEnd, dayNames, moreDaysEvent, isAllDayEvent) {
+        var formattedDate = '';
+
+        if (dateStart[0] === dateEnd[0]) {
+            if (dateStart[1] === dateEnd[1]) {
+                if (dateStart[2] === dateEnd[2]) {
+                    //month day, year
+                    formattedDate = formatDateSameDay(dateStart, dateEnd, dayNames, moreDaysEvent, isAllDayEvent);
+                } else {
+                    //month day, year - month day, year
+                    formattedDate = formatDateDifferentYear(dateStart, dateEnd, dayNames);
+                }
+            } else {
+                if (dateStart[2] === dateEnd[2]) {
+                    //month day - month day, year
+                    formattedDate = formatDateDifferentMonth(dateStart, dateEnd, dayNames);
+                } else {
+                    //month day, year - month day, year
+                    formattedDate = formatDateDifferentYear(dateStart, dateEnd, dayNames);
+                }
+            }
+        } else {
+            if (dateStart[1] === dateEnd[1]) {
+                if (dateStart[2] === dateEnd[2]) {
+                    //month day-day, year
+                    formattedDate = formatDateDifferentDay(dateStart, dateEnd, dayNames);
+                } else {
+                    //month day, year - month day, year
+                    formattedDate = formatDateDifferentYear(dateStart, dateEnd, dayNames);
+                }
+            } else {
+                if (dateStart[2] === dateEnd[2]) {
+                    //month day - month day, year
+                    formattedDate = formatDateDifferentMonth(dateStart, dateEnd, dayNames);
+                } else {
+                    //month day, year - month day, year
+                    formattedDate = formatDateDifferentYear(dateStart, dateEnd, dayNames);
+                }
+            }
+        }
+
+        return formattedDate;
+    };
+
+    var getFormattedTime = function getFormattedTime(date) {
+        var formattedTime = '',
+            period = 'AM',
+            hour = date[3],
+            minute = date[4];
+
+        // Handle afternoon.
+        if (hour >= 12) {
+            period = 'PM';
+
+            if (hour >= 13) {
+                hour -= 12;
+            }
+        }
+
+        // Handle midnight.
+        if (hour === 0) {
+            hour = 12;
+        }
+
+        // Ensure 2-digit minute value.
+        minute = (minute < 10 ? '0' : '') + minute;
+
+        // Format time.
+        formattedTime = hour + ':' + minute + period;
+        return formattedTime;
+    };
+
+    return {
+        init: function init(settingsOverride) {
+            var settings = {
+                calendarUrl: 'https://www.googleapis.com/calendar/v3/calendars/milan.kacurak@gmail.com/events?key=AIzaSyCR3-ptjHE-_douJsn8o20oRwkxt-zHStY',
+                past: true,
+                upcoming: true,
+                sameDayTimes: true,
+                dayNames: true,
+                pastTopN: -1,
+                upcomingTopN: -1,
+                recurringEvents: true,
+                itemsTagName: 'li',
+                upcomingSelector: '#events-upcoming',
+                pastSelector: '#events-past',
+                upcomingHeading: '<h2>Upcoming events</h2>',
+                pastHeading: '<h2>Past events</h2>',
+                format: ['*date*', ': ', '*summary*', ' &mdash; ', '*description*', ' in ', '*location*'],
+                timeMin: undefined,
+                timeMax: undefined
+            };
+
+            settings = mergeOptions(settings, settingsOverride);
+
+            _init(settings);
+        }
+    };
+}();
+
+/***/ })
+/******/ ]);
 //# sourceMappingURL=format-google-calendar.js.map
